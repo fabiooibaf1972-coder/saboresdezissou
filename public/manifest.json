@@ -1,0 +1,30 @@
+{
+  "name": "Sabores de Zissou",
+  "short_name": "Sabores",
+  "description": "Confeitaria artesanal com os mais deliciosos doces",
+  "theme_color": "#ec4899",
+  "background_color": "#F9F7E8",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "id": "/",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "splash_pages": null,
+  "categories": ["food", "shopping"],
+  "lang": "pt-BR"
+}
