@@ -23,18 +23,9 @@ const DynamicLogo: React.FC<DynamicLogoProps> = ({
         const response = await fetch('/api/config');
         if (response.ok) {
           const { config } = await response.json();
-          setLogoUrl(config.siteLogo || '/icon-192x192.png');
-        } else {
-          // Fallback para localStorage
-          if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-            const savedLogo = localStorage.getItem('SITE_LOGO');
-            setLogoUrl(savedLogo || '/icon-192x192.png');
-          } else {
-            setLogoUrl('/icon-192x192.png');
-          }
+          setLogoUrl(config.siteLogo);
         }
-      } catch (error) {
-        console.error('Erro ao carregar logo via API, usando localStorage:', error);
+      } catch {
         // Fallback para localStorage ou padrão (apenas no cliente)
         if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
           const savedLogo = localStorage.getItem('SITE_LOGO');

@@ -103,18 +103,8 @@ const PWAInstallManager: React.FC<PWAInstallManagerProps> = ({
   }, [isStandalone, deferredPrompt]);
 
   const handleInstallClick = async () => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-    
-    // Mostrar aviso primeiro
-    const confirmInstall = confirm('📱 Instalar Sabores de Zissou como app?\n\n✅ Acesso rápido sem navegador\n✅ Notificações offline\n✅ Experiência nativa\n\nClique em "OK" para continuar!');
-    
-    if (!confirmInstall) {
-      return;
-    }
-    
     if (deferredPrompt) {
-      // Chrome/Edge - Instalação direta automática
+      // Chrome/Edge - Instalação automática direta
       console.log('Iniciando instalação automática...');
       try {
         await deferredPrompt.prompt();
@@ -124,20 +114,22 @@ const PWAInstallManager: React.FC<PWAInstallManagerProps> = ({
         if (outcome === 'accepted') {
           setDeferredPrompt(null);
           setCanInstall(false);
-          alert('🎉 App instalado com sucesso! Agora você pode acessá-lo diretamente da tela inicial.');
-        } else {
-          alert('❌ Instalação cancelada. Você pode tentar novamente a qualquer momento.');
         }
       } catch (error) {
         console.error('Erro na instalação:', error);
-        alert('❌ Erro na instalação. Tente novamente ou use o menu do navegador.');
       }
-    } else if (isIOS && isSafari) {
-      // iOS Safari - mostrar instruções melhoradas
-      alert('📱 Para instalar o app:\n\n1. Toque no botão "Compartilhar" (na barra inferior)\n2. Role para baixo e toque em "Adicionar à Tela de Início"\n3. Toque em "Adicionar"\n\n🎉 Pronto! O app aparecerá na sua tela inicial!');
     } else {
-      // Outros navegadores - instruções genéricas
-      alert('📱 Para instalar o app:\n\nNo menu do navegador (3 pontinhos), procure por:\n• "Instalar app"\n• "Adicionar à tela inicial"\n• "Instalar Sabores de Zissou"\n\n🎉 Depois é só seguir as instruções!');
+      // Para navegadores que não suportam beforeinstallprompt
+      // Tentar instalar via manifest
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.ready;
+          // Forçar instalação via manifest
+          window.location.href = '/manifest.json';
+        } catch (error) {
+          console.error('Erro ao tentar instalar via manifest:', error);
+        }
+      }
     }
   };
 

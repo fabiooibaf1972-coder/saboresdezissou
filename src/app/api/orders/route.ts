@@ -158,45 +158,34 @@ export async function POST(request: NextRequest) {
     let webhookSent = false;
     const webhookUrl = process.env.WEBHOOK_URL || process.env.NEXT_PUBLIC_WHATSAPP_WEBHOOK_URL;
     
-    if (webhookUrl && !webhookUrl.includes('webhook.site') && webhookUrl.startsWith('http')) {
+    if (webhookUrl && !webhookUrl.includes('webhook.site')) {
       try {
         console.log('📱 Enviando webhook para:', webhookUrl.substring(0, 30) + '...');
-        
-        const webhookData = {
-          phone: body.customer_whatsapp,
-          message: message,
-          image: body.product_image,
-          order_id: orderId
-        };
-        
-        console.log('📋 Dados do webhook:', webhookData);
         
         const webhookResponse = await fetch(webhookUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(webhookData),
-        });
-
-        console.log('📥 Resposta do webhook:', {
-          status: webhookResponse.status,
-          statusText: webhookResponse.statusText,
-          ok: webhookResponse.ok
+          body: JSON.stringify({
+            phone: body.customer_whatsapp,
+            message: message,
+            image: body.product_image,
+            order_id: orderId
+          }),
         });
 
         if (webhookResponse.ok) {
           console.log('✅ Webhook enviado com sucesso!');
           webhookSent = true;
         } else {
-          const errorText = await webhookResponse.text().catch(() => 'Erro desconhecido');
-          console.error('❌ Erro no webhook:', errorText);
+          console.error('❌ Erro no webhook:', await webhookResponse.text());
         }
       } catch (webhookError) {
         console.error('❌ Erro ao enviar webhook:', webhookError);
       }
     } else {
-      console.log('🔗 Webhook não configurado, é URL de teste ou inválida:', webhookUrl);
+      console.log('🔗 Webhook não configurado ou é URL de teste');
     }
 
     // Log detalhado do pedido para depuração

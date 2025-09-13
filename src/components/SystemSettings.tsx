@@ -85,8 +85,7 @@ const SystemSettings: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Erro no servidor: ${response.status}`);
+        throw new Error('Erro no upload');
       }
 
       const { url } = await response.json();
@@ -95,20 +94,7 @@ const SystemSettings: React.FC = () => {
       setMessage({ type: 'success', text: 'Imagem enviada com sucesso!' });
     } catch (error) {
       console.error('Erro no upload:', error);
-      
-      // Fallback: usar URL local temporária
-      try {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const dataUrl = e.target?.result as string;
-          handleChange(field, dataUrl);
-          setMessage({ type: 'success', text: 'Imagem carregada localmente (modo offline)' });
-        };
-        reader.readAsDataURL(file);
-      } catch (fallbackError) {
-        console.error('Erro no fallback:', fallbackError);
-        setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Erro ao enviar imagem' });
-      }
+      setMessage({ type: 'error', text: 'Erro ao enviar imagem' });
     } finally {
       setLoading(false);
     }
@@ -143,40 +129,8 @@ const SystemSettings: React.FC = () => {
       }
       
     } catch (error) {
-      console.error('Erro ao salvar via API, tentando fallback localStorage:', error);
-      
-      // Fallback: salvar no localStorage
-      try {
-        if (config.webhookUrl) {
-          localStorage.setItem('WEBHOOK_URL', config.webhookUrl);
-        }
-        if (config.adminEmail) {
-          localStorage.setItem('ADMIN_EMAIL', config.adminEmail);
-        }
-        if (config.adminPassword) {
-          localStorage.setItem('ADMIN_PASSWORD', config.adminPassword);
-        }
-        if (config.siteLogo) {
-          localStorage.setItem('SITE_LOGO', config.siteLogo);
-        }
-        if (config.appIcon) {
-          localStorage.setItem('APP_ICON', config.appIcon);
-        }
-        
-        setMessage({ type: 'success', text: 'Configurações salvas localmente (modo offline)' });
-        
-        // Limpar senha do estado após salvar
-        setConfig(prev => ({ ...prev, adminPassword: '' }));
-        
-        // Recarregar página para aplicar mudanças
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-        
-      } catch (localError) {
-        console.error('Erro no fallback localStorage:', localError);
-        setMessage({ type: 'error', text: 'Erro ao salvar configurações. Tente novamente.' });
-      }
+      console.error('Erro ao salvar:', error);
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Erro ao salvar configurações' });
     } finally {
       setLoading(false);
     }

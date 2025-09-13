@@ -136,15 +136,9 @@ export async function POST(request: NextRequest) {
 
     console.log('💾 Salvando configuração atualizada...');
 
-    // Salvar configurações com tratamento de erro
-    try {
-      await writeFile(CONFIG_FILE, JSON.stringify(newConfig, null, 2));
-      console.log('✅ Configuração salva em arquivo');
-    } catch (writeError) {
-      console.warn('⚠️ Erro ao salvar arquivo, usando fallback para localStorage');
-      // Fallback: salvar no localStorage do cliente (será implementado no frontend)
-      // Por enquanto, continuamos com a operação
-    }
+    // Salvar configurações
+    await writeFile(CONFIG_FILE, JSON.stringify(newConfig, null, 2));
+    console.log('✅ Configuração salva em arquivo');
 
     // Atualizar manifest.json se o ícone mudou
     if (appIcon && appIcon !== currentConfig.appIcon) {
@@ -214,8 +208,6 @@ export async function PUT(request: NextRequest) {
   try {
     const { webhookUrl } = await request.json();
 
-    console.log('🧪 Testando webhook:', webhookUrl);
-
     if (!webhookUrl) {
       return NextResponse.json(
         { success: false, error: 'URL do webhook é obrigatória' },
@@ -223,19 +215,9 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Validar URL do webhook
-    if (!/^https?:\/\/.+/.test(webhookUrl)) {
-      return NextResponse.json(
-        { success: false, error: 'URL do webhook inválida. Deve começar com http:// ou https://' },
-        { status: 400 }
-      );
-    }
-
     const testMessage = {
       text: `🧪 *Teste do Webhook - Sabores de Zissou*\n\n✅ Se você recebeu esta mensagem, o webhook está funcionando corretamente!\n\n📅 Data/Hora: ${new Date().toLocaleString('pt-BR')}`
     };
-
-    console.log('📤 Enviando mensagem de teste...');
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
@@ -245,19 +227,9 @@ export async function PUT(request: NextRequest) {
       body: JSON.stringify(testMessage)
     });
 
-    console.log('📥 Resposta do webhook:', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    });
-
     if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Erro desconhecido');
-      console.error('❌ Erro na resposta do webhook:', errorText);
-      throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
-
-    console.log('✅ Webhook testado com sucesso!');
 
     return NextResponse.json({ 
       success: true, 
@@ -265,7 +237,7 @@ export async function PUT(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Erro no teste do webhook:', error);
+    console.error('Erro no teste do webhook:', error);
     return NextResponse.json(
       { 
         success: false, 
